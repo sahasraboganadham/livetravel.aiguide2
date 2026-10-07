@@ -1,0 +1,12 @@
+{
+  "name": "Explorer — Live Remote Exploration & AI Travel Concierge",
+  "description": "Connect with live local explorers via real-time mobile video, 30+ language AI translation, interactive Google Maps navigation, and an AI Travel Planner with integrated hotel and transit booking.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

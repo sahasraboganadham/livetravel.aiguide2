@@ -1,0 +1,395 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Pillar 1: Global Safety Net (Default-Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation Blueprint: UserProfile
+    function isValidUserProfile(data) {
+      return data.keys().hasAll([
+        'uid',
+        'displayName',
+        'domainRole',
+        'preferredLanguage',
+        'preferredCurrency',
+        'streakScore',
+        'creditsBalance',
+        'spotsVisitedCount',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'uid',
+        'displayName',
+        'domainRole',
+        'preferredLanguage',
+        'preferredCurrency',
+        'streakScore',
+        'creditsBalance',
+        'spotsVisitedCount',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 && data.uid.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.uid == request.auth.uid &&
+      data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 80 &&
+      data.domainRole is string && data.domainRole in ['traveler', 'explorer'] &&
+      data.preferredLanguage is string && data.preferredLanguage.size() >= 2 && data.preferredLanguage.size() <= 10 &&
+      data.preferredCurrency is string && data.preferredCurrency.size() >= 3 && data.preferredCurrency.size() <= 5 &&
+      data.streakScore is int && data.streakScore >= 0 && data.streakScore <= 1000000 &&
+      (data.creditsBalance is int || data.creditsBalance is float) && data.creditsBalance >= 0 && data.creditsBalance <= 1000000 &&
+      data.spotsVisitedCount is int && data.spotsVisitedCount >= 0 && data.spotsVisitedCount <= 100000 &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    // Validation Blueprint: WishlistItem
+    function isValidWishlistItem(data) {
+      return data.keys().hasAll([
+        'userId',
+        'placeId',
+        'placeName',
+        'city',
+        'moodCategory',
+        'estimatedCostUsd',
+        'lat',
+        'lng',
+        'notes',
+        'createdAt'
+      ]) &&
+      data.keys().hasOnly([
+        'userId',
+        'placeId',
+        'placeName',
+        'city',
+        'moodCategory',
+        'estimatedCostUsd',
+        'lat',
+        'lng',
+        'notes',
+        'createdAt'
+      ]) &&
+      data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 && data.userId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.userId == request.auth.uid &&
+      data.placeId is string && data.placeId.size() >= 1 && data.placeId.size() <= 128 && data.placeId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.placeName is string && data.placeName.size() >= 1 && data.placeName.size() <= 120 &&
+      data.city is string && data.city.size() >= 1 && data.city.size() <= 80 &&
+      data.moodCategory is string && data.moodCategory.size() >= 1 && data.moodCategory.size() <= 40 &&
+      (data.estimatedCostUsd is int || data.estimatedCostUsd is float) && data.estimatedCostUsd >= 0 && data.estimatedCostUsd <= 100000 &&
+      (data.lat is int || data.lat is float) && data.lat >= -90 && data.lat <= 90 &&
+      (data.lng is int || data.lng is float) && data.lng >= -180 && data.lng <= 180 &&
+      data.notes is string && data.notes.size() <= 300 &&
+      data.createdAt is timestamp;
+    }
+
+    // Validation Blueprint: CallSession
+    function isValidCallSession(data) {
+      return data.keys().hasAll([
+        'travelerId',
+        'travelerName',
+        'explorerId',
+        'explorerName',
+        'placeName',
+        'travelerLanguage',
+        'explorerLanguage',
+        'paymentAmountUsd',
+        'paymentStatus',
+        'status',
+        'lastInstruction',
+        'translatedInstruction',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'travelerId',
+        'travelerName',
+        'explorerId',
+        'explorerName',
+        'placeName',
+        'travelerLanguage',
+        'explorerLanguage',
+        'paymentAmountUsd',
+        'paymentStatus',
+        'status',
+        'lastInstruction',
+        'translatedInstruction',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.travelerId is string && data.travelerId.size() >= 1 && data.travelerId.size() <= 128 && data.travelerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.travelerName is string && data.travelerName.size() >= 1 && data.travelerName.size() <= 80 &&
+      data.explorerId is string && data.explorerId.size() >= 1 && data.explorerId.size() <= 128 && data.explorerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.explorerName is string && data.explorerName.size() >= 1 && data.explorerName.size() <= 80 &&
+      data.placeName is string && data.placeName.size() >= 1 && data.placeName.size() <= 120 &&
+      data.travelerLanguage is string && data.travelerLanguage.size() >= 2 && data.travelerLanguage.size() <= 10 &&
+      data.explorerLanguage is string && data.explorerLanguage.size() >= 2 && data.explorerLanguage.size() <= 10 &&
+      (data.paymentAmountUsd is int || data.paymentAmountUsd is float) && data.paymentAmountUsd >= 0 && data.paymentAmountUsd <= 10000 &&
+      data.paymentStatus is string && data.paymentStatus in ['paid', 'refunded', 'released'] &&
+      data.status is string && data.status in ['ringing', 'accepted', 'rejected', 'completed'] &&
+      data.lastInstruction is string && data.lastInstruction.size() <= 400 &&
+      data.translatedInstruction is string && data.translatedInstruction.size() <= 400 &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    // Validation Blueprint: SpotReview
+    function isValidSpotReview(data) {
+      return data.keys().hasAll([
+        'authorId',
+        'authorName',
+        'explorerId',
+        'placeName',
+        'rating',
+        'comment',
+        'languageCode',
+        'hasVideoRecap',
+        'createdAt'
+      ]) &&
+      data.keys().hasOnly([
+        'authorId',
+        'authorName',
+        'explorerId',
+        'placeName',
+        'rating',
+        'comment',
+        'languageCode',
+        'hasVideoRecap',
+        'createdAt'
+      ]) &&
+      data.authorId is string && data.authorId.size() >= 1 && data.authorId.size() <= 128 && data.authorId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.authorId == request.auth.uid &&
+      data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 80 &&
+      data.explorerId is string && data.explorerId.size() >= 1 && data.explorerId.size() <= 128 && data.explorerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.placeName is string && data.placeName.size() >= 1 && data.placeName.size() <= 120 &&
+      data.rating is int && data.rating >= 1 && data.rating <= 5 &&
+      data.comment is string && data.comment.size() >= 1 && data.comment.size() <= 600 &&
+      data.languageCode is string && data.languageCode.size() >= 2 && data.languageCode.size() <= 10 &&
+      data.hasVideoRecap is bool &&
+      data.createdAt is timestamp;
+    }
+
+    // Validation Blueprint: SavedTrip
+    function isValidSavedTrip(data) {
+      return data.keys().hasAll([
+        'userId',
+        'destination',
+        'travelDates',
+        'totalBudgetUsd',
+        'estimatedSpendUsd',
+        'discountAppliedPct',
+        'bookingStatus',
+        'summaryText',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'userId',
+        'destination',
+        'travelDates',
+        'totalBudgetUsd',
+        'estimatedSpendUsd',
+        'discountAppliedPct',
+        'bookingStatus',
+        'summaryText',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 && data.userId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.userId == request.auth.uid &&
+      data.destination is string && data.destination.size() >= 1 && data.destination.size() <= 120 &&
+      data.travelDates is string && data.travelDates.size() >= 1 && data.travelDates.size() <= 80 &&
+      (data.totalBudgetUsd is int || data.totalBudgetUsd is float) && data.totalBudgetUsd >= 0 && data.totalBudgetUsd <= 1000000 &&
+      (data.estimatedSpendUsd is int || data.estimatedSpendUsd is float) && data.estimatedSpendUsd >= 0 && data.estimatedSpendUsd <= 1000000 &&
+      (data.discountAppliedPct is int || data.discountAppliedPct is float) && data.discountAppliedPct >= 0 && data.discountAppliedPct <= 50 &&
+      data.bookingStatus is string && data.bookingStatus in ['planned', 'booked'] &&
+      data.summaryText is string && data.summaryText.size() >= 1 && data.summaryText.size() <= 2500 &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    // Validation Blueprint: TripMemory
+    function isValidTripMemory(data) {
+      return data.keys().hasAll([
+        'userId',
+        'placeName',
+        'explorerName',
+        'memoryTitle',
+        'summaryText',
+        'placesShown',
+        'culturalHighlight',
+        'languageCode',
+        'createdAt'
+      ]) &&
+      data.keys().hasOnly([
+        'userId',
+        'placeName',
+        'explorerName',
+        'memoryTitle',
+        'summaryText',
+        'placesShown',
+        'culturalHighlight',
+        'languageCode',
+        'createdAt'
+      ]) &&
+      data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 && data.userId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.userId == request.auth.uid &&
+      data.placeName is string && data.placeName.size() >= 1 && data.placeName.size() <= 120 &&
+      data.explorerName is string && data.explorerName.size() >= 1 && data.explorerName.size() <= 80 &&
+      data.memoryTitle is string && data.memoryTitle.size() >= 1 && data.memoryTitle.size() <= 160 &&
+      data.summaryText is string && data.summaryText.size() >= 1 && data.summaryText.size() <= 2000 &&
+      data.placesShown is list && data.placesShown.size() >= 1 && data.placesShown.size() <= 15 &&
+      data.culturalHighlight is string && data.culturalHighlight.size() >= 1 && data.culturalHighlight.size() <= 500 &&
+      data.languageCode is string && data.languageCode.size() >= 2 && data.languageCode.size() <= 10 &&
+      data.createdAt is timestamp;
+    }
+
+    // Collection: /users/{userId}
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+      allow list: if false;
+      allow create: if isVerifiedUser() &&
+        isValidId(userId) &&
+        request.auth.uid == userId &&
+        isValidUserProfile(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser() &&
+        isValidId(userId) &&
+        request.auth.uid == userId &&
+        isValidUserProfile(incoming()) &&
+        incoming().uid == existing().uid &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          // Action 1: Update Preferences & Role Domain
+          incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'domainRole', 'preferredLanguage', 'preferredCurrency', 'updatedAt']) ||
+          // Action 2: Update Streak, Credits & Visited Spots
+          incoming().diff(existing()).affectedKeys().hasOnly(['streakScore', 'creditsBalance', 'spotsVisitedCount', 'updatedAt'])
+        );
+      allow delete: if false;
+    }
+
+    // Collection: /wishlists/{wishlistId}
+    match /wishlists/{wishlistId} {
+      allow get: if isSignedIn() && isValidId(wishlistId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isVerifiedUser() &&
+        isValidId(wishlistId) &&
+        isValidWishlistItem(incoming()) &&
+        incoming().createdAt == request.time &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid));
+      allow update: if isVerifiedUser() &&
+        isValidId(wishlistId) &&
+        isValidWishlistItem(incoming()) &&
+        existing().userId == request.auth.uid &&
+        incoming().userId == existing().userId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['notes', 'estimatedCostUsd']);
+      allow delete: if isVerifiedUser() && isValidId(wishlistId) && existing().userId == request.auth.uid;
+    }
+
+    // Collection: /callSessions/{sessionId}
+    match /callSessions/{sessionId} {
+      allow get: if isSignedIn() && isValidId(sessionId) &&
+        (existing().travelerId == request.auth.uid || existing().explorerId == request.auth.uid);
+      allow list: if isSignedIn() &&
+        (resource.data.travelerId == request.auth.uid || resource.data.explorerId == request.auth.uid);
+      allow create: if isVerifiedUser() &&
+        isValidId(sessionId) &&
+        isValidCallSession(incoming()) &&
+        incoming().travelerId == request.auth.uid &&
+        incoming().status == 'ringing' &&
+        incoming().paymentStatus == 'paid' &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid));
+      allow update: if isVerifiedUser() &&
+        isValidId(sessionId) &&
+        isValidCallSession(incoming()) &&
+        !(existing().status in ['rejected', 'completed']) &&
+        incoming().travelerId == existing().travelerId &&
+        incoming().explorerId == existing().explorerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (existing().travelerId == request.auth.uid || existing().explorerId == request.auth.uid) &&
+        (
+          // Action 1: Explorer or Traveler updates call status & payment settlement
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'paymentStatus', 'updatedAt']) ||
+          // Action 2: Traveler sends live translated instructions during active call
+          (existing().status == 'accepted' && incoming().diff(existing()).affectedKeys().hasOnly(['lastInstruction', 'translatedInstruction', 'updatedAt']))
+        );
+      allow delete: if false;
+    }
+
+    // Collection: /reviews/{reviewId}
+    match /reviews/{reviewId} {
+      allow get: if isSignedIn() && isValidId(reviewId) && existing().rating >= 1;
+      allow list: if isSignedIn() && resource.data.rating >= 1;
+      allow create: if isVerifiedUser() &&
+        isValidId(reviewId) &&
+        isValidSpotReview(incoming()) &&
+        incoming().createdAt == request.time &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid));
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // Collection: /trips/{tripId}
+    match /trips/{tripId} {
+      allow get: if isSignedIn() && isValidId(tripId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isVerifiedUser() &&
+        isValidId(tripId) &&
+        isValidSavedTrip(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid));
+      allow update: if isVerifiedUser() &&
+        isValidId(tripId) &&
+        isValidSavedTrip(incoming()) &&
+        existing().userId == request.auth.uid &&
+        incoming().userId == existing().userId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['bookingStatus', 'updatedAt']);
+      allow delete: if isVerifiedUser() && isValidId(tripId) && existing().userId == request.auth.uid;
+    }
+
+    // Collection: /tripMemories/{memoryId}
+    match /tripMemories/{memoryId} {
+      allow get: if isSignedIn() && isValidId(memoryId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isVerifiedUser() &&
+        isValidId(memoryId) &&
+        isValidTripMemory(incoming()) &&
+        incoming().createdAt == request.time &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid));
+      allow update: if false;
+      allow delete: if isVerifiedUser() && isValidId(memoryId) && existing().userId == request.auth.uid;
+    }
+  }
+}

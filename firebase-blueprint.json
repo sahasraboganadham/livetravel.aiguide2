@@ -1,0 +1,503 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Public profile, role domain, streak score, loyalty credits, and language preferences for a Traveler or Local Explorer.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the user",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Public display name",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "domainRole": {
+          "type": "string",
+          "description": "Active portal domain role: traveler or explorer",
+          "enum": ["traveler", "explorer"]
+        },
+        "preferredLanguage": {
+          "type": "string",
+          "description": "ISO code of preferred language",
+          "minLength": 2,
+          "maxLength": 10
+        },
+        "preferredCurrency": {
+          "type": "string",
+          "description": "ISO currency code",
+          "minLength": 3,
+          "maxLength": 5
+        },
+        "streakScore": {
+          "type": "integer",
+          "description": "Streak score earned from visiting spots and sharing reviews"
+        },
+        "creditsBalance": {
+          "type": "number",
+          "description": "Wallet/login credits balance in USD equivalent"
+        },
+        "spotsVisitedCount": {
+          "type": "integer",
+          "description": "Total local spots explored"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of profile creation"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last profile update"
+        }
+      },
+      "required": [
+        "uid",
+        "displayName",
+        "domainRole",
+        "preferredLanguage",
+        "preferredCurrency",
+        "streakScore",
+        "creditsBalance",
+        "spotsVisitedCount",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "WishlistItem": {
+      "title": "WishlistItem",
+      "description": "Saved destination or spot in a user's wishlist and budget tracker.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner UID",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "placeId": {
+          "type": "string",
+          "description": "Google Maps Place ID or spot identifier",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "placeName": {
+          "type": "string",
+          "description": "Display name of the place",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "city": {
+          "type": "string",
+          "description": "City or region",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "moodCategory": {
+          "type": "string",
+          "description": "Mood filter tag",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "estimatedCostUsd": {
+          "type": "number",
+          "description": "Estimated budget in USD"
+        },
+        "lat": {
+          "type": "number",
+          "description": "Latitude coordinate"
+        },
+        "lng": {
+          "type": "number",
+          "description": "Longitude coordinate"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Personal budget or travel notes",
+          "minLength": 0,
+          "maxLength": 300
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": [
+        "userId",
+        "placeId",
+        "placeName",
+        "city",
+        "moodCategory",
+        "estimatedCostUsd",
+        "lat",
+        "lng",
+        "notes",
+        "createdAt"
+      ]
+    },
+    "CallSession": {
+      "title": "CallSession",
+      "description": "Live remote exploration video call session between a Traveler and a Local Explorer with pre-call payment, multilanguage instructions, and status transitions.",
+      "type": "object",
+      "properties": {
+        "travelerId": {
+          "type": "string",
+          "description": "UID of the requesting traveler",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "travelerName": {
+          "type": "string",
+          "description": "Display name of the traveler",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "explorerId": {
+          "type": "string",
+          "description": "Identifier of the target explorer",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "explorerName": {
+          "type": "string",
+          "description": "Display name of the explorer",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "placeName": {
+          "type": "string",
+          "description": "Location being explored",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "travelerLanguage": {
+          "type": "string",
+          "description": "Traveler language code",
+          "minLength": 2,
+          "maxLength": 10
+        },
+        "explorerLanguage": {
+          "type": "string",
+          "description": "Explorer language code",
+          "minLength": 2,
+          "maxLength": 10
+        },
+        "paymentAmountUsd": {
+          "type": "number",
+          "description": "Pre-call payment amount in USD"
+        },
+        "paymentStatus": {
+          "type": "string",
+          "description": "Escrow payment state",
+          "enum": ["paid", "refunded", "released"]
+        },
+        "status": {
+          "type": "string",
+          "description": "Call lifecycle state",
+          "enum": ["ringing", "accepted", "rejected", "completed"]
+        },
+        "lastInstruction": {
+          "type": "string",
+          "description": "Latest instruction sent to the explorer",
+          "minLength": 0,
+          "maxLength": 400
+        },
+        "translatedInstruction": {
+          "type": "string",
+          "description": "Translated instruction in explorer's language",
+          "minLength": 0,
+          "maxLength": 400
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last state transition timestamp"
+        }
+      },
+      "required": [
+        "travelerId",
+        "travelerName",
+        "explorerId",
+        "explorerName",
+        "placeName",
+        "travelerLanguage",
+        "explorerLanguage",
+        "paymentAmountUsd",
+        "paymentStatus",
+        "status",
+        "lastInstruction",
+        "translatedInstruction",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "SpotReview": {
+      "title": "SpotReview",
+      "description": "Post-call star rating, review, and video recap metadata created by a Traveler.",
+      "type": "object",
+      "properties": {
+        "authorId": {
+          "type": "string",
+          "description": "UID of the reviewer",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "authorName": {
+          "type": "string",
+          "description": "Display name of the reviewer",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "explorerId": {
+          "type": "string",
+          "description": "Explorer ID reviewed",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "placeName": {
+          "type": "string",
+          "description": "Name of the spot visited",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "rating": {
+          "type": "integer",
+          "description": "Star rating from 1 to 5"
+        },
+        "comment": {
+          "type": "string",
+          "description": "Review text",
+          "minLength": 1,
+          "maxLength": 600
+        },
+        "languageCode": {
+          "type": "string",
+          "description": "Language of the review",
+          "minLength": 2,
+          "maxLength": 10
+        },
+        "hasVideoRecap": {
+          "type": "boolean",
+          "description": "Whether a video clip recap was captured"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": [
+        "authorId",
+        "authorName",
+        "explorerId",
+        "placeName",
+        "rating",
+        "comment",
+        "languageCode",
+        "hasVideoRecap",
+        "createdAt"
+      ]
+    },
+    "SavedTrip": {
+      "title": "SavedTrip",
+      "description": "Curated AI Travel Planner itinerary, budget breakdown, and hotel/transit booking record saved by a user.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner UID",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "destination": {
+          "type": "string",
+          "description": "Destination city and country",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "travelDates": {
+          "type": "string",
+          "description": "Date range string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "totalBudgetUsd": {
+          "type": "number",
+          "description": "Planned budget in USD"
+        },
+        "estimatedSpendUsd": {
+          "type": "number",
+          "description": "AI estimated spend in USD"
+        },
+        "discountAppliedPct": {
+          "type": "number",
+          "description": "Regular user loyalty discount percentage applied"
+        },
+        "bookingStatus": {
+          "type": "string",
+          "description": "Booking state",
+          "enum": ["planned", "booked"]
+        },
+        "summaryText": {
+          "type": "string",
+          "description": "Concise summary of itinerary, hotels, and transit",
+          "minLength": 1,
+          "maxLength": 2500
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Update timestamp"
+        }
+      },
+      "required": [
+        "userId",
+        "destination",
+        "travelDates",
+        "totalBudgetUsd",
+        "estimatedSpendUsd",
+        "discountAppliedPct",
+        "bookingStatus",
+        "summaryText",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "TripMemory": {
+      "title": "TripMemory",
+      "description": "AI-generated post-call text summary of the places an Explorer showed during a live call, saved to the Traveler's account.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Traveler UID",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "placeName": {
+          "type": "string",
+          "description": "Primary place explored during the call",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "explorerName": {
+          "type": "string",
+          "description": "Name of the Local Explorer who guided the call",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "memoryTitle": {
+          "type": "string",
+          "description": "AI-generated title of the Trip Memory",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "summaryText": {
+          "type": "string",
+          "description": "Gemini-generated text summary of the places the explorer showed",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "placesShown": {
+          "type": "array",
+          "description": "List of specific spots and landmarks shown during the live call",
+          "items": {
+            "type": "string"
+          }
+        },
+        "culturalHighlight": {
+          "type": "string",
+          "description": "Key cultural takeaway from the live exploration",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "languageCode": {
+          "type": "string",
+          "description": "Language of the generated summary",
+          "minLength": 2,
+          "maxLength": 10
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": [
+        "userId",
+        "placeName",
+        "explorerName",
+        "memoryTitle",
+        "summaryText",
+        "placesShown",
+        "culturalHighlight",
+        "languageCode",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "Public/preference user profile keyed by Firebase Auth UID."
+    },
+    "/wishlists/{wishlistId}": {
+      "schema": {
+        "$ref": "#/entities/WishlistItem"
+      },
+      "description": "User wishlist and budget list items."
+    },
+    "/callSessions/{sessionId}": {
+      "schema": {
+        "$ref": "#/entities/CallSession"
+      },
+      "description": "Live explorer call requests, instructions, and status updates."
+    },
+    "/reviews/{reviewId}": {
+      "schema": {
+        "$ref": "#/entities/SpotReview"
+      },
+      "description": "Post-call star ratings and reviews."
+    },
+    "/trips/{tripId}": {
+      "schema": {
+        "$ref": "#/entities/SavedTrip"
+      },
+      "description": "Saved AI Travel Planner itineraries and bookings."
+    },
+    "/tripMemories/{memoryId}": {
+      "schema": {
+        "$ref": "#/entities/TripMemory"
+      },
+      "description": "AI-generated post-call Trip Memory summaries saved in the traveler's account."
+    }
+  }
+}
